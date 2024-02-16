@@ -27,7 +27,7 @@ const firebaseConfig = {
     authDomain: "unitodo-dca1b.firebaseapp.com",
     projectId: "unitodo-dca1b",
     storageBucket: "unitodo-dca1b.appspot.com",
-    messagingSenderId: "611894646094",
+    messagingSenderId: "611894646094",  
     appId: "1:611894646094:web:c88564df7afdfa806b3a1f"
 };
 const app = initializeApp(firebaseConfig);
@@ -117,6 +117,37 @@ function resetLoginInputs(){
         })    
     }
 
+function entryObjToEntryElement(entryObj){
+    let entryElm = document.createElement("div")
+    
+    entryElm.id = entryObj.id
+    let entryDate = new Date(entryObj.data().created)
+    console.log(entryDate)
+    entryElm.classList.add("entry")
+    //entryElm.dataset.subject = entryObj.data().subject
+    entryElm.innerHTML = `
+    <div class="entry-info">
+        <div class="entry-date">
+            ${formatDateForEntry(entryDate)}
+        </div>
+        <div class="entry-wordcount">
+            ${entryObj.data().content.split(" ").length} words
+        </div>
+    </div>
+    <div class="entry-content">
+        ${entryObj.data().content}
+    </div>
+    <div class="entry-action-buttons">
+        
+    </div>
+    `
+
+    return entryElm
+}
+function addEntryToList(entryObj){
+    let entryElm = entryObjToEntryElement(entryObj)
+    grab("entries").append(entryElm)
+}
 async function signInUser(){
 
     let emailInput      = grab("signin-email-input").value
@@ -194,7 +225,10 @@ function addEventListenersToSignin(){
         grab("signup-button").addEventListener("click", createAndSignInUser)
         grab("signin-redirect-button").addEventListener("click", switchToSignin)
     
-}
+    // ? Signout button
+        grab("logout-button").addEventListener("click", signOutUser)
+        
+}   
 
 addEventListenersToSignin()
 
@@ -218,30 +252,25 @@ onAuthStateChanged(auth, async (user) => {
                 cacheSizeBytes:CACHE_SIZE_UNLIMITED
             })
         })
-        // onSnapshot(
-        //     query(collection(db, `users/${userId}/entries`)), { includeMetadataChanges: true }, (snapshot) => {
-        //         snapshot.docChanges().forEach((change) => {
-        //             const source = snapshot.metadata.fromCache ? "local cache" : "server";
-        //             if(change.type === "added"){
-        //                 if(Number(change.doc.id) > Number(lastId)){ //? If doc is newer
-        //                     prependEntryToList(change.doc)      
-        //                     console.log("added:",change.doc.id,change.doc.data(), "from", source)            
-        //                 }
-        //                 else{
-        //                     insertEntryToList(change.doc)
-        //                     console.log("inserted:",change.doc.data(), "from", source)
-        //                 }
-        //             }
-        //             if(change.type === "modified"){
-        //                 console.log("modified:",change.doc.data(), "from", source)
-        //             }
-        //             if(change.type === "removed"){
-        //                 console.log("removed:",change.doc.data(), "from", source)
-        //             }
-        //             lastId = change.doc.id
-        //         })
-        //     }
-        // )
+        onSnapshot(
+            query(collection(db, `users/${userId}/todos`)), { includeMetadataChanges: true }, (snapshot) => {
+                snapshot.docChanges().forEach((change) => {
+                    const source = snapshot.metadata.fromCache ? "local cache" : "server";
+                    console.log("snapshotted")
+                    if(change.type === "added"){
+                        addEntryToList(change.doc)      
+                        console.log("added:",change.doc.id,change.doc.data(), "from", source) 
+                    }
+                    if(change.type === "modified"){
+                        console.log("modified:",change.doc.data(), "from", source)
+                    }
+                    if(change.type === "removed"){
+                        console.log("removed:",change.doc.data(), "from", source)
+                    }
+                    lastId = change.doc.id
+                })
+            }
+        )
     }
     else {
         console.log("hide content and show signin")
@@ -255,4 +284,6 @@ onAuthStateChanged(auth, async (user) => {
     }
 })
 
+function addEventListeners(){
 
+}
