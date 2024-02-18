@@ -34,3 +34,6 @@ function showFlex(id){
 function showBlock(id){
     grab(id).style.display = "block"
 }
+function formatDateForEntry(){
+    console.log()
+}

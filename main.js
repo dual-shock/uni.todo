@@ -119,28 +119,20 @@ function resetLoginInputs(){
 
 function entryObjToEntryElement(entryObj){
     let entryElm = document.createElement("div")
+    let entryName = entryObj.data().name
+    let entrySubject = entryObj.data().subject
+    let entryDesc = entryObj.data().desc
     
     entryElm.id = entryObj.id
-    let entryDate = new Date(entryObj.data().created)
-    console.log(entryDate)
+    let entryDateCreated = entryObj.data().created
+    let entryDateDeadline = entryObj.data().duedate
+    console.log(entryDateCreated, entryDateDeadline)
     entryElm.classList.add("entry")
-    //entryElm.dataset.subject = entryObj.data().subject
+
     entryElm.innerHTML = `
-    <div class="entry-info">
-        <div class="entry-date">
-            ${formatDateForEntry(entryDate)}
-        </div>
-        <div class="entry-wordcount">
-            ${entryObj.data().content.split(" ").length} words
-        </div>
-    </div>
-    <div class="entry-content">
-        ${entryObj.data().content}
-    </div>
-    <div class="entry-action-buttons">
-        
-    </div>
-    `
+        ENTRY ${entryDateCreated} ${entryDateDeadline} ${entryObj.id} ${entryName} ${entrySubject} ${entryDesc}
+    
+        `
 
     return entryElm
 }
