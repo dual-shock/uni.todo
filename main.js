@@ -123,11 +123,15 @@ function entryObjToEntryElement(entryObj){
     let entrySubject = entryObj.data().subject
     let entryDesc = entryObj.data().desc
     
+
     entryElm.id = entryObj.id
-    let entryDateCreated = entryObj.data().created
-    let entryDateDeadline = entryObj.data().duedate
-    console.log(entryDateCreated, entryDateDeadline)
+    let entryDateCreated = new Date(entryObj.data().created.seconds * 1000)
+    let entryDateDeadline = new Date(entryObj.data().duedate.seconds * 1000)
+    let currDate = new Date()
+    console.log(entryDateDeadline.getTime() - entryDateCreated.getTime() )
     entryElm.classList.add("entry")
+
+
 
     entryElm.innerHTML = `
         ENTRY ${entryDateCreated} ${entryDateDeadline} ${entryObj.id} ${entryName} ${entrySubject} ${entryDesc}
