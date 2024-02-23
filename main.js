@@ -123,22 +123,64 @@ function entryObjToEntryElement(entryObj){
     let entrySubject = entryObj.data().subject
     let entryDesc = entryObj.data().desc
     
-
     entryElm.id = entryObj.id
     let entryDateCreated = new Date(entryObj.data().created.seconds * 1000)
     let entryDateDeadline = new Date(entryObj.data().duedate.seconds * 1000)
     let currDate = new Date()
-    console.log(entryDateDeadline.getTime() - entryDateCreated.getTime() )
+
+    let progress = ((currDate.getTime() - entryDateCreated.getTime()) / (entryDateDeadline.getTime() - entryDateCreated.getTime()) ) * 100
+    let check = true
+    console.log(progress)
+    if(progress <= 0 || progress >= 100){
+        check = false
+    }
     entryElm.classList.add("entry")
 
+    let barElm = document.createElement("div")
+    barElm.classList.add("bar")
+    barElm.style.background = `linear-gradient(90deg, #B57994 ${progress}%, #714585ad ${progress}%)`
+    barElm.innerHTML = "test"
 
 
-    entryElm.innerHTML = `
-        ENTRY ${entryDateCreated} ${entryDateDeadline} ${entryObj.id} ${entryName} ${entrySubject} ${entryDesc}
-    
+
+    entryElm.innerHTML = ` 
+        <div class="entry-title">
+        ${entryName}
+        </div>    
+        <div class="entry-subject">
+        ${entrySubject}
+        </div>    
+        <div class="entry-desc">
+        ${entryDesc}
         `
-
+    
+    if(check){
+        addTimer(entryDateDeadline, barElm)
+        console.log("YES !")
+    }
+    entryElm.appendChild(barElm)
     return entryElm
+}
+
+function addTimer(endDate, elm){
+    let x = setInterval(
+        function(){
+        let countDownDate = endDate.getTime()
+        let now = new Date().getTime()
+        let distance = countDownDate - now
+        let days = Math.floor(distance / (1000 * 60 * 60 * 24))
+        let hours = Math.floor((distance % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60))
+        let minutes = Math.floor((distance % (1000 * 60 * 60)) / (1000 * 60))
+        let seconds = Math.floor((distance % (1000 * 60)) / 1000)
+        
+        elm.innerHTML = `${addZero(days)}d ${addZero(hours)}h ${addZero(minutes)}m ${addZero(seconds)}s`
+        if (distance < 0) {
+            clearInterval(x);
+            elm.innerHTML = "";
+            }
+        },
+    1000
+    )
 }
 function addEntryToList(entryObj){
     let entryElm = entryObjToEntryElement(entryObj)

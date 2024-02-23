@@ -39,7 +39,7 @@ color:#9d8189;
         box-sizing: border-box;
         margin:0;
         padding:0;
-        background-color:#bb838b33;
+        /* background-color:#bb838b33; */
     }
     *::before,
     *::after {
@@ -120,6 +120,7 @@ color:#9d8189;
         flex-direction: column;
         align-items: center;
         padding: 10px;
+        padding-right: 0px;
         background: radial-gradient(circle, #9d8189 0%, #d8e2dc 100%);
         background-size: 120% 115%;
         background-repeat: repeat-y;
@@ -128,33 +129,101 @@ color:#9d8189;
         #entries-content-container{
             width:100%;
             max-width: 600px;
-            height:91%;
-            max-height: 91%;
+            height:95%;
+            max-height: 95%;
             display: flex;
             flex-direction: column;
             align-items: stretch;
             row-gap: 10px;
+            
         }
             #category-selector{
-                display: flex;
-                align-items: center;
-                justify-content: center;
+
                 flex:1;
-                font-size: 1.4rem;
+                font-size: 1.7rem;
+                
+               
             }
+                #category-row{
+                    height: 100%;
+                    
+                    display:flex;
+                    
+                    align-items: flex-start;
+                    overflow-x: scroll;
+                    flex-wrap: nowrap;
+                }
+                    .category{
+
+                        text-align: center;
+                        margin-right: 10px;
+                        padding-left:15px;
+                        padding-right: 15px;
+                        width: fit-content;
+                        color:#534549;
+                        display:flex;
+                        justify-content: center;
+                        align-items: center;
+                        border:3px solid #9d8189;
+                        height: 100%;
+                    }
             #add-new-button{
                 display: flex;
                 flex:1;
-                font-size: 1.4rem;
+                font-size: 1.7rem;
                 align-items: center;
-                padding-left:10px;
+                padding-left:15px;
+                margin-right:10px;
+                color:#534549;
+                border:3px solid #9d8189;
             }
             #entries{
-                flex:10;
+                flex:12;
+                padding-left:0px;
+                padding-right:10px;
             }
-                #entry{
-
+                .entry{
+                    padding-left:10px;
+                    border-left: 3px solid #9d8189;
+                    padding-bottom:10px;
                 }
+                
+                    .entry-title{
+                        width:50%;
+                        float:left;
+                        font-size: 1.8rem;
+                        color: #47353a;;
+                        height:30px;
+                        display: flex;
+                        align-items: center;
+                        text-wrap: nowrap;
+                    }
+                    .entry-subject{
+                        display: flex;
+                        align-items: center;
+                        width:50%;
+                        float:left;
+                        font-size: 1.7rem;
+                        color: #47353a;;
+                        text-align: right;
+                        justify-content: flex-end;
+                        height:30px;
+                        padding-right:10px;
+                    }
+                    .entry-desc{
+                        width:100%;
+                        color: #47353a;;
+                        font-size: 1.3rem;
+                        margin-bottom: 10px;
+                    }
+                    .bar{
+                        color: #55414ac2;
+                        text-align: center;
+                        height:fit-content;
+                        font-size: 1.6rem;
+                        margin-right: 10px;
+                    }
+
     
     #logout-button{
 
