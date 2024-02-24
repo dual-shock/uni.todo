@@ -61,30 +61,63 @@
     <div id="content-container" style="display:none;">
 
         <div id="entries-content-container" style="display: flex;">
-            <div id="category-selector">
-                <div id="category-row">
-                    <div class="category">Sub1</div>
-                    <div class="category">Sub2</div>
-                    <div class="category">Sub3</div>
-                    <div class="category">Sub4123213213123123</div>
-                    <div class="category">Sub5</div>
-                    <div class="category">Sub6</div>
+            <div class="category-selector">
+                <div class="category-row" id="entries-row">
+
                 </div>
             </div>
             <div id="add-new-button">ADD NEW</div> 
             <div id="entries">
 
             </div>
+            <div id="logout-button">
+                logout
+            </div>
         </div>
-
-        <div id="logout-button">
-            logout
-        </div>
-
 
 
         <div id="new-entry-container" style="display: none;">
-            newentry screen
+            <div class="category-selector">
+                <div class="category-row" id="new-entry-row">
+                    <div class="category" id="new-category-button">
+                        <input onkeyup="this.style.width = ((this.value.length + 1) * 0.7) + 'rem';" onkeypress="this.style.width = ((this.value.length + 1) * 0.7) + 'rem';" type="text" id="new-category-input" placeholder="+ New">
+                    </div>
+
+                </div>
+            </div>
+            <div id="name-input-container">
+                <textarea id="name-input" placeholder="Title..."></textarea>
+            </div>
+            <div id="desc-input-container">
+                <textarea id="desc-input" placeholder="Desc..."></textarea>
+            </div>
+
+            <div id="time-inputs-container">
+
+                <div id="start-time-input-container">
+                    <div id="start-time-title">
+                        Start time
+                    </div>
+                    <input type="datetime-local" id="start-time-input" step="1">
+                </div>
+
+
+                <div id="end-time-input-container">
+                    <div id="end-time-title">
+                        Deadline
+                    </div>
+                    <input type="datetime-local" id="end-time-input" step="1">
+                </div>
+            </div>
+            <div id="action-buttons">
+                <div id="cancel-button">
+                    Cancel
+                </div>
+                <div id="add-button">
+                    Add
+                </div>
+            </div>
+
         </div>
     </div>
 </body>

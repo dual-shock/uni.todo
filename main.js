@@ -7,7 +7,7 @@ import {
     persistentLocalCache,
     CACHE_SIZE_UNLIMITED,
     onSnapshot,
-    setDoc, doc,
+    setDoc, doc, addDoc, Timestamp,
     query, 
 
     // * Auth
@@ -21,6 +21,7 @@ from "./js/firebaseUtils.js"
 //* grab() added to namespace from js/utils.js in index.html
 
 //TODO Todo here
+//TODO Remove elms when theyre over, add elms delete / done button
 
 const firebaseConfig = {
     apiKey: "AIzaSyAyGmKK4Ln-eCJhKP1T-pNoSaCX2VxfiTM",
@@ -30,6 +31,7 @@ const firebaseConfig = {
     messagingSenderId: "611894646094",  
     appId: "1:611894646094:web:c88564df7afdfa806b3a1f"
 };
+
 const app = initializeApp(firebaseConfig);
 let db
 
@@ -115,7 +117,115 @@ function resetLoginInputs(){
             inputElm.classList.remove("login-input-clicked")
             inputElm.addEventListener("click", e => { e.target.classList.add("login-input-clicked") }, {once: true})
         })    
+}
+let categoryElms = document.querySelectorAll(".category")
+let subjects = []
+categoryElms.forEach((elm) => {
+    subjects.push(elm.innerHTML)
+})
+function addSubjectToBar(subjectName){
+    console.log(subjects)
+    if(subjects.includes(subjectName)){
+        console.log("This is already in!")
     }
+    else{
+        console.log("this is an unadded category")
+        let categoryElm = document.createElement("div")
+        categoryElm.className = "category"
+        categoryElm.innerHTML = subjectName
+        categoryElm.addEventListener("click", e => {
+            let selected = grab("selected-category","class")
+            console.log(selected)
+            if(selected.length !== 0){
+                selected[0].classList.remove("selected-category")
+            }
+            //FILTER ENTRIES
+            e.target.classList.add("selected-category")
+        })
+        grab("new-entry-row").append(categoryElm)
+        
+        
+
+
+        let entriesCategoryElm = document.createElement("div")
+        entriesCategoryElm.className = "category"
+        entriesCategoryElm.innerHTML = subjectName
+        entriesCategoryElm.addEventListener("click",e => {
+            let selected = grab("selected-category","class")
+            console.log(selected)
+            if(selected.length !== 0){
+                selected[0].classList.remove("selected-category")
+            }
+
+            e.target.classList.add("selected-category")
+        })
+        grab("entries-row").append(entriesCategoryElm)
+    
+        subjects.push(subjectName)
+    }
+}
+function resetAddEntryInputs(){
+    let startDate = new Date()
+    grab("start-time-input").value = `${startDate.getFullYear()}-${addZero(startDate.getMonth()+1)}-${addZero(startDate.getDate())}T${addZero(startDate.getHours())}:${addZero(startDate.getMinutes())}:${addZero(startDate.getSeconds())}`
+    let endDate = new Date()
+    endDate.setDate(endDate.getDate() + 7)
+    grab("end-time-input").value = `${endDate.getFullYear()}-${addZero(endDate.getMonth()+1)}-${addZero(endDate.getDate())}T${addZero(endDate.getHours())}:${addZero(endDate.getMinutes())}:${addZero(endDate.getSeconds())}`
+    grab("name-input").value = ""
+    grab("desc-input").value = ""
+    grab("new-category-button").children[0].placeholder = "+ New"
+    let selected = grab("selected-category","class")
+    if(selected.length !== 0){
+        selected[0].classList.remove("selected-category")
+    }
+
+}   
+function addNewEntry(){
+    let startTimeInput = grab("start-time-input").value
+    let endTimeInput = grab("end-time-input").value
+    let nameInput = grab("name-input").value
+    let descInput = grab("desc-input").value
+    console.log("HERHEHRHE",new Date(startTimeInput).getTime() )
+    let selectedNewEntryCategory = document.querySelectorAll("#new-entry-row > .selected-category")
+    let categoryInput = ""
+    if(selectedNewEntryCategory.length !== 0){
+        if(selectedNewEntryCategory[0].id == "new-category-button"){
+            categoryInput = selectedNewEntryCategory[0].children[0].value
+            
+        }
+        else{
+            categoryInput = selectedNewEntryCategory[0].innerHTML
+        }
+    }
+    let valid = true
+    if(categoryInput == ""){
+        grab("new-category-button").children[0].placeholder = "No cat. !"
+        valid = false
+    }
+    
+    if(nameInput == ""){
+        grab("name-input").placeholder = "Name cant be empty !"
+        valid = false
+    }
+
+    if(valid === true){
+        console.log(userId)
+        try{
+            let docRef = addDoc( collection(db, `users/${userId}/todos`), {
+                created: new Timestamp(Math.round(new Date(startTimeInput).getTime() / 1000), 499999999),
+                duedate: new Timestamp(Math.round(new Date(endTimeInput).getTime() / 1000), 499999999),
+                desc: descInput,
+                name: nameInput,
+                subject: categoryInput
+            })
+            switchToShowEntries()
+            console.log(docRef)
+        }
+        catch(e){
+            console.log(e)
+        }
+        
+    }    
+}
 
 function entryObjToEntryElement(entryObj){
     let entryElm = document.createElement("div")
@@ -139,9 +249,10 @@ function entryObjToEntryElement(entryObj){
     let barElm = document.createElement("div")
     barElm.classList.add("bar")
     barElm.style.background = `linear-gradient(90deg, #B57994 ${progress}%, #714585ad ${progress}%)`
-    barElm.innerHTML = "test"
+    barElm.innerHTML = "00d 00h 00m 00s"
 
-
+    
+    addSubjectToBar(entrySubject)
 
     entryElm.innerHTML = ` 
         <div class="entry-title">
@@ -155,37 +266,64 @@ function entryObjToEntryElement(entryObj){
         `
     
     if(check){
-        addTimer(entryDateDeadline, barElm)
+        addTimer(entryDateCreated, entryDateDeadline, barElm)
         console.log("YES !")
     }
     entryElm.appendChild(barElm)
-    return entryElm
+    return {
+        "elm":entryElm,
+        "timeLeft":entryDateDeadline.getTime() - currDate.getTime()
+    }
 }
 
-function addTimer(endDate, elm){
+function addTimer(startDate, endDate, elm){
     let x = setInterval(
         function(){
-        let countDownDate = endDate.getTime()
-        let now = new Date().getTime()
-        let distance = countDownDate - now
-        let days = Math.floor(distance / (1000 * 60 * 60 * 24))
-        let hours = Math.floor((distance % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60))
-        let minutes = Math.floor((distance % (1000 * 60 * 60)) / (1000 * 60))
-        let seconds = Math.floor((distance % (1000 * 60)) / 1000)
-        
-        elm.innerHTML = `${addZero(days)}d ${addZero(hours)}h ${addZero(minutes)}m ${addZero(seconds)}s`
-        if (distance < 0) {
-            clearInterval(x);
-            elm.innerHTML = "";
-            }
+            let currDate = new Date().getTime()
+            let progress = ((currDate - startDate.getTime()) / (endDate.getTime() - startDate.getTime()) ) * 100
+            elm.style.background = `linear-gradient(90deg, #B57994 ${progress}%, #714585ad ${progress}%)`
+            let countDownDate = endDate.getTime()
+            
+            let distance = countDownDate - currDate
+            let days = Math.floor(distance / (1000 * 60 * 60 * 24))
+            let hours = Math.floor((distance % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60))
+            let minutes = Math.floor((distance % (1000 * 60 * 60)) / (1000 * 60))
+            let seconds = Math.floor((distance % (1000 * 60)) / 1000)
+            
+            elm.innerHTML = `${addZero(days)}d ${addZero(hours)}h ${addZero(minutes)}m ${addZero(seconds)}s`
+            if (distance < 0) {
+                clearInterval(x);
+                elm.innerHTML = "";
+                }
         },
     1000
     )
 }
+let lastEntryTimeLeft = 0
 function addEntryToList(entryObj){
-    let entryElm = entryObjToEntryElement(entryObj)
-    grab("entries").append(entryElm)
+    let entry = entryObjToEntryElement(entryObj)
+    if(entry.timeLeft < lastEntryTimeLeft){
+        grab("entries").prepend(entry.elm)
+    }
+    else{
+        grab("entries").append(entry.elm)
+    }
+    lastEntryTimeLeft = entry.timeLeft
 }
+
+function selectCategoryForNewEntry(){
+
+    console.log("clicked !")
+    e.target.classList.add()
+}
+function filterEntries(){
+    console.log("clicked !")
+}
+
+
+
+
+
 async function signInUser(){
 
     let emailInput      = grab("signin-email-input").value
@@ -255,7 +393,7 @@ function signOutUser(){
 }
 
 function addEventListenersToSignin(){
-        // ? Signin buttons
+    // ? Signin buttons
         grab("signin-button").addEventListener("click", signInUser)
         grab("signup-redirect-button").addEventListener("click", switchToSignup)
     
@@ -306,6 +444,7 @@ onAuthStateChanged(auth, async (user) => {
                         console.log("removed:",change.doc.data(), "from", source)
                     }
                     lastId = change.doc.id
+                    console.log(change.doc.data().created)
                 })
             }
         )
@@ -323,5 +462,21 @@ onAuthStateChanged(auth, async (user) => {
 })
 
 function addEventListeners(){
+    // ? Add entry buttons
+        grab("add-new-button").addEventListener("click",switchToAddEntry)
+    // ? Add entry buttons
+        grab("cancel-button").addEventListener("click", switchToShowEntries)
+        grab("add-button").addEventListener("click", addNewEntry)
+        grab("new-category-button").addEventListener("click", e => {
+            let selected = grab("selected-category","class")
+            console.log(selected)
+            if(selected.length !== 0){
+                selected[0].classList.remove("selected-category")
+            }
 
+            grab("new-category-button").classList.add("selected-category")
+        } 
+        
+        )
 }
+addEventListeners()
