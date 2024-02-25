@@ -219,6 +219,7 @@ color:#9d8189;
                         align-items: center;
                         text-wrap: nowrap;
                         text-overflow: ellipsis;
+                        overflow-x: hidden;
                     }
                     .entry-subject{
                         display: flex;
@@ -229,7 +230,7 @@ color:#9d8189;
                         color: #47353a;;
                         text-align: right;
                         justify-content: flex-end;
-                        height:30px;
+                        height:fit-content;
                         padding-right:10px;
                     }
                     .entry-desc{
@@ -242,11 +243,12 @@ color:#9d8189;
                         
                     }
                         .entry-desc-text{
-                            max-width: 80%;
+                            max-width: 100%;
                             text-wrap:wrap;
                             text-overflow: clip;
                             white-space: initial;
-                            word-wrap: break-word
+                            word-wrap: break-word;
+                            margin-bottom:3px;
                             
                         }
 
