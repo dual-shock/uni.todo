@@ -173,6 +173,7 @@ function resetAddEntryInputs(){
     grab("name-input").value = ""
     grab("desc-input").value = ""
     grab("new-category-button").children[0].placeholder = "+ New"
+    grab("new-category-button").children[0].value = ""
     let selected = grab("selected-category","class")
     if(selected.length !== 0){
         selected[0].classList.remove("selected-category")
