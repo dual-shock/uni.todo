@@ -235,11 +235,18 @@ async function addNewEntry(){
         
     }    
 }
-function removeEntry(id){
+async function removeEntry(id){
     grab(`${id}Parent`).dataset.finished = "true"
-    grab(`${id}Parent`).children[2].children[1].remove()
+    let descElm = grab(`${id}Parent`).children[2]
+    let deleteButton = descElm.children[1]
+    deleteButton.remove()
     grab(`${id}Parent`).classList.add("finished-entry")
     grab("finished").appendChild( grab(`${id}Parent`) )
+    let finishedBarElm = grab(`${id}Parent`).children[3]
+
+    await sleep(1000)
+    finishedBarElm.style.background = `linear-gradient(90deg, #B57994 100%, #714585ad 100%)`
+    finishedBarElm.innerHTML = "00D 00H 00M 00S"
 
 }
 function entryObjToEntryElement(entryObj){
@@ -333,7 +340,7 @@ function addTimer(startDate, endDate, elm){
             
             elm.innerHTML = `${addZero(days)}d ${addZero(hours)}h ${addZero(minutes)}m ${addZero(seconds)}s`
             
-            if (distance <= 0 || elm.parentElement.dataset.finished == "true") {
+            if (distance <= 0 || elm.parentElement.dataset.finished == "true" || elm.parentElement.dataset.finished == "true") {
                 clearInterval(x);
                 removeEntry(elm.parentElement.id.replace("Parent",""))
             }
