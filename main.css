@@ -184,7 +184,24 @@ color:#9d8189;
                 flex:12;
                 padding-left:0px;
                 padding-right:10px;
+                overflow-x: scroll;
             }
+                #finished{
+                    margin-top:50px;
+                }
+                .finished-entry{
+                    
+                    opacity: 50%;
+                }
+                .finished-entry > .entry-title{
+                    
+                }
+                .finished-entry > .entry-subject{
+                    
+                }
+                .finished-entry > .entry-desc{
+                    
+                }
                 .entry{
                     padding-left:10px;
                     border-left: 3px solid #9d8189;
@@ -220,7 +237,34 @@ color:#9d8189;
                         color: #47353a;;
                         font-size: 1.3rem;
                         margin-bottom: 10px;
+                        display: flex;
+                        flex-wrap: wrap;
+                        
                     }
+                        .entry-desc-text{
+                            max-width: 80%;
+                            text-wrap:wrap;
+                            text-overflow: clip;
+                            white-space: initial;
+                            word-wrap: break-word
+                            
+                        }
+
+                        .entry-delete{
+                            
+                            
+                            border:3px solid #9d8189;
+                            margin-left: auto;
+                            width: fit-content;
+                            display: flex;
+                            align-items: center;
+                            justify-content: center;
+                            padding:2px;
+                            padding-right: 4px;
+                            padding-left: 4px;
+                            margin-right: 10px;
+                        }
+                    
                     .bar{
                         color: #55414ac2;
                         text-align: center;

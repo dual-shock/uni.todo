@@ -6,7 +6,7 @@ import {
     initializeFirestore,
     persistentLocalCache,
     CACHE_SIZE_UNLIMITED,
-    onSnapshot,
+    onSnapshot, deleteDoc, updateDoc,
     setDoc, doc, addDoc, Timestamp,
     query, 
 
@@ -179,7 +179,8 @@ function resetAddEntryInputs(){
     }
 
 }   
-function addNewEntry(){
+const sleep = (delay) => new Promise((resolve) => setTimeout(resolve, delay))
+async function addNewEntry(){
     let startTimeInput = grab("start-time-input").value
     let endTimeInput = grab("end-time-input").value
     let nameInput = grab("name-input").value
@@ -207,6 +208,13 @@ function addNewEntry(){
         valid = false
     }
 
+    // if(new Date(startTimeInput).getTime() > new Date(endTimeInput).getTime() / 1000){
+    //     valid = false
+    //     grab("add-button").innerHTML = "Dates error!"
+    //     await sleep(3000)
+    //     grab("add-button").innerHTML = "Add"
+    // }
+
     if(valid === true){
         console.log(userId)
         try{
@@ -226,14 +234,19 @@ function addNewEntry(){
         
     }    
 }
+function removeEntry(id){
+    grab(`${id}Parent`).dataset.finished = "true"
+    grab(`${id}Parent`).children[2].children[1].remove()
+    grab(`${id}Parent`).classList.add("finished-entry")
+    grab("finished").appendChild( grab(`${id}Parent`) )
 
+}
 function entryObjToEntryElement(entryObj){
     let entryElm = document.createElement("div")
     let entryName = entryObj.data().name
     let entrySubject = entryObj.data().subject
     let entryDesc = entryObj.data().desc
-    
-    entryElm.id = entryObj.id
+    entryElm.id = `${entryObj.id}Parent`
     let entryDateCreated = new Date(entryObj.data().created.seconds * 1000)
     let entryDateDeadline = new Date(entryObj.data().duedate.seconds * 1000)
     let currDate = new Date()
@@ -244,6 +257,7 @@ function entryObjToEntryElement(entryObj){
     if(progress <= 0 || progress >= 100){
         check = false
     }
+    entryElm.dataset.progress = progress
     entryElm.classList.add("entry")
 
     let barElm = document.createElement("div")
@@ -253,22 +267,48 @@ function entryObjToEntryElement(entryObj){
 
     
     addSubjectToBar(entrySubject)
-
+    if(entryDesc == ""){entryDesc = "No desc."}
     entryElm.innerHTML = ` 
         <div class="entry-title">
-        ${entryName}
+            ${entryName}
         </div>    
         <div class="entry-subject">
-        ${entrySubject}
+            ${entrySubject}
         </div>    
-        <div class="entry-desc">
-        ${entryDesc}
+
         `
-    
+    let descElm = document.createElement("div")
+    descElm.classList.add("entry-desc")
+    let descText = document.createElement("div")
+    descText.classList.add("entry-desc-text")
+    descText.innerHTML = entryDesc
+
+    let deleteButton = document.createElement("div")
+    deleteButton.classList.add("entry-delete")
+    deleteButton.innerHTML = "Mark done"
+    deleteButton.addEventListener("click", e => {
+        try{
+            docRef = updateDoc(doc(db, `users/${userId}/todos`, entryObj.id), {
+                duedate: new Timestamp(Math.round(new Date().getTime() / 1000) - 10, 499999999),
+            })
+
+            console.log(docRef)
+
+        }
+        catch(e){
+            console.log(e)
+        }
+    })
+    descElm.appendChild(descText)
+
+    descElm.appendChild(deleteButton)
+
+
     if(check){
         addTimer(entryDateCreated, entryDateDeadline, barElm)
         console.log("YES !")
     }
+    entryElm.appendChild(descElm)
     entryElm.appendChild(barElm)
     return {
         "elm":entryElm,
@@ -291,10 +331,11 @@ function addTimer(startDate, endDate, elm){
             let seconds = Math.floor((distance % (1000 * 60)) / 1000)
             
             elm.innerHTML = `${addZero(days)}d ${addZero(hours)}h ${addZero(minutes)}m ${addZero(seconds)}s`
-            if (distance < 0) {
+            
+            if (distance <= 0 || elm.parentElement.dataset.finished == "true") {
                 clearInterval(x);
-                elm.innerHTML = "";
-                }
+                removeEntry(elm.parentElement.id.replace("Parent",""))
+            }
         },
     1000
     )
@@ -302,20 +343,24 @@ function addTimer(startDate, endDate, elm){
 let lastEntryTimeLeft = 0
 function addEntryToList(entryObj){
     let entry = entryObjToEntryElement(entryObj)
+
+
+    if(entry.elm.dataset.progress <= 0 || entry.elm.dataset.progress >= 100){
+        grab("ongoing").prepend(entry.elm)
+        removeEntry(entry.elm.id.replace("Parent",""))
+        return
+    }
     if(entry.timeLeft < lastEntryTimeLeft){
-        grab("entries").prepend(entry.elm)
+        grab("ongoing").prepend(entry.elm)
     }
     else{
-        grab("entries").append(entry.elm)
+        grab("ongoing").append(entry.elm)
     }
+
     lastEntryTimeLeft = entry.timeLeft
 }
 
-function selectCategoryForNewEntry(){
 
-    console.log("clicked !")
-    e.target.classList.add()
-}
 function filterEntries(){
     console.log("clicked !")
 }
@@ -439,8 +484,10 @@ onAuthStateChanged(auth, async (user) => {
                     }
                     if(change.type === "modified"){
                         console.log("modified:",change.doc.data(), "from", source)
+                        removeEntry(change.doc.id)
                     }
                     if(change.type === "removed"){
+                        
                         console.log("removed:",change.doc.data(), "from", source)
                     }
                     lastId = change.doc.id
@@ -462,8 +509,9 @@ onAuthStateChanged(auth, async (user) => {
 })
 
 function addEventListeners(){
-    // ? Add entry buttons
-        grab("add-new-button").addEventListener("click",switchToAddEntry)
+    // ? Content buttons
+        grab("add-new-button").addEventListener("click",switchToAddEntry)      
+  
     // ? Add entry buttons
         grab("cancel-button").addEventListener("click", switchToShowEntries)
         grab("add-button").addEventListener("click", addNewEntry)
