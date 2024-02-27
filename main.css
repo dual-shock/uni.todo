@@ -279,18 +279,39 @@ color:#9d8189;
                         margin-right: 10px;
                     }
 
-    
-        #logout-button{
+        #back-buttons{
             flex:1;
-            width: 50%;
             display: flex;
-            justify-content: center;
-            align-items: center;
-            padding-left:15px;
-            color:#534549;
-            border:3px solid #9d8189;
-            font-size: 1.7rem;
+            flex-direction: row;
+            column-gap: 10px;
+            margin-right: 10px;
         }
+            #logout-button{
+                flex:1;
+
+                display: flex;
+                justify-content: center;
+                align-items: center;
+
+                color:#534549;
+                border:3px solid #9d8189;
+                font-size: 1.7rem;
+                opacity: 95%;
+            }
+            #back-button{
+                flex:1;
+                text-decoration: none;
+                display: flex;
+                justify-content: center;
+                align-items: center;
+
+                
+                border:3px solid #9d8189;
+                font-size: 1.7rem;
+            }
+            #back-button > a {
+                color:#534549;
+            }
 
 /* ? New entry screen */
     #new-entry-container{
