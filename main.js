@@ -191,17 +191,20 @@ async function addNewEntry(){
             categoryInput = selectedNewEntryCategory[0].innerHTML
         }
     }
+    console.log(categoryInput)
     let valid = true
     if(categoryInput == ""){
         grab("new-category-button").children[0].placeholder = "No cat. !"
         valid = false
+        console.log("invalid category?")
     }
     
     if(nameInput == ""){
+        console.log("invalid name?")
         grab("name-input").placeholder = "Name cant be empty !"
         valid = false
     }
-
+    console.log("test that t comes here")
     // if(new Date(startTimeInput).getTime() > new Date(endTimeInput).getTime() / 1000){
     //     valid = false
     //     grab("add-button").innerHTML = "Dates error!"
@@ -210,6 +213,7 @@ async function addNewEntry(){
     // }
 
     if(valid === true){
+        console.log("reaches here?")
         try{
             let docRef = addDoc( collection(db, `users/${userId}/todos`), {
                 created: new Timestamp(Math.round(new Date(startTimeInput).getTime() / 1000), 499999999),
@@ -550,8 +554,11 @@ function addEventListeners(){
             if(selected.length !== 0){
                 selected[0].classList.remove("selected-category")
             }
-
+            console.log("reaches listener")
+            console.log(grab("new-category-button").classList)
             grab("new-category-button").classList.add("selected-category")
+            console.log(grab("new-category-button").classList)
+            console.log(grab("new-category-button"))
         } 
         
         )
