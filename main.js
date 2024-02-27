@@ -21,7 +21,7 @@ from "./js/firebaseUtils.js"
 //* grab() added to namespace from js/utils.js in index.html
 
 //TODO Todo here
-//TODO Remove elms when theyre over, add elms delete / done button
+
 
 const firebaseConfig = {
     apiKey: "AIzaSyAyGmKK4Ln-eCJhKP1T-pNoSaCX2VxfiTM",
@@ -124,18 +124,15 @@ categoryElms.forEach((elm) => {
     subjects.push(elm.innerHTML)
 })
 function addSubjectToBar(subjectName){
-    console.log(subjects)
     if(subjects.includes(subjectName)){
-        console.log("This is already in!")
+        return
     }
     else{
-        console.log("this is an unadded category")
         let categoryElm = document.createElement("div")
         categoryElm.className = "category"
         categoryElm.innerHTML = subjectName
         categoryElm.addEventListener("click", e => {
             let selected = grab("selected-category","class")
-            console.log(selected)
             if(selected.length !== 0){
                 selected[0].classList.remove("selected-category")
             }
@@ -144,20 +141,17 @@ function addSubjectToBar(subjectName){
         })
         grab("new-entry-row").append(categoryElm)
         
-        
-
-
         let entriesCategoryElm = document.createElement("div")
         entriesCategoryElm.className = "category"
         entriesCategoryElm.innerHTML = subjectName
         entriesCategoryElm.addEventListener("click",e => {
             let selected = grab("selected-category","class")
-            console.log(selected)
             if(selected.length !== 0){
                 selected[0].classList.remove("selected-category")
             }
 
             e.target.classList.add("selected-category")
+            filterEntries()
         })
         grab("entries-row").append(entriesCategoryElm)
     
@@ -186,7 +180,6 @@ async function addNewEntry(){
     let endTimeInput = grab("end-time-input").value
     let nameInput = grab("name-input").value
     let descInput = grab("desc-input").value
-    console.log("HERHEHRHE",new Date(startTimeInput).getTime() )
     let selectedNewEntryCategory = document.querySelectorAll("#new-entry-row > .selected-category")
     let categoryInput = ""
     if(selectedNewEntryCategory.length !== 0){
@@ -217,7 +210,6 @@ async function addNewEntry(){
     // }
 
     if(valid === true){
-        console.log(userId)
         try{
             let docRef = addDoc( collection(db, `users/${userId}/todos`), {
                 created: new Timestamp(Math.round(new Date(startTimeInput).getTime() / 1000), 499999999),
@@ -227,7 +219,6 @@ async function addNewEntry(){
                 subject: categoryInput
             })
             switchToShowEntries()
-            console.log(docRef)
         }
         catch(e){
             console.log(e)
@@ -261,11 +252,12 @@ function entryObjToEntryElement(entryObj){
 
     let progress = ((currDate.getTime() - entryDateCreated.getTime()) / (entryDateDeadline.getTime() - entryDateCreated.getTime()) ) * 100
     let check = true
-    console.log(progress)
     if(progress <= 0 || progress >= 100){
         check = false
     }
+    let timeLeft = entryDateDeadline.getTime() - currDate.getTime()
     entryElm.dataset.progress = progress
+    entryElm.dataset.timeLeft = timeLeft
     entryElm.classList.add("entry")
 
     let barElm = document.createElement("div")
@@ -299,9 +291,6 @@ function entryObjToEntryElement(entryObj){
             docRef = updateDoc(doc(db, `users/${userId}/todos`, entryObj.id), {
                 duedate: new Timestamp(Math.round(new Date().getTime() / 1000) - 10, 499999999),
             })
-
-            console.log(docRef)
-
         }
         catch(e){
             console.log(e)
@@ -314,13 +303,12 @@ function entryObjToEntryElement(entryObj){
 
     if(check){
         addTimer(entryDateCreated, entryDateDeadline, barElm)
-        console.log("YES !")
     }
     entryElm.appendChild(descElm)
     entryElm.appendChild(barElm)
     return {
         "elm":entryElm,
-        "timeLeft":entryDateDeadline.getTime() - currDate.getTime()
+        "timeLeft":timeLeft
     }
 }
 
@@ -348,29 +336,64 @@ function addTimer(startDate, endDate, elm){
     1000
     )
 }
-let lastEntryTimeLeft = 0
+
 function addEntryToList(entryObj){
     let entry = entryObjToEntryElement(entryObj)
-
-
     if(entry.elm.dataset.progress <= 0 || entry.elm.dataset.progress >= 100){
         grab("ongoing").prepend(entry.elm)
         removeEntry(entry.elm.id.replace("Parent",""))
         return
     }
-    if(entry.timeLeft < lastEntryTimeLeft){
-        grab("ongoing").prepend(entry.elm)
-    }
+    let entriesNodeList = document.querySelectorAll("#ongoing > div")
+    let added = false
+    if(entriesNodeList != null){
+        for(let elm of entriesNodeList){
+            if(entry.timeLeft < Number(elm.dataset.timeLeft)){
+                grab("ongoing").insertBefore(entry.elm, elm)
+                added = true
+                break
+            } 
+        }
+        if(!added){
+            grab("ongoing").appendChild(entry.elm)
+        }
+    } 
     else{
-        grab("ongoing").append(entry.elm)
+        grab("ongoing").appendChild(entry.elm)
     }
-
-    lastEntryTimeLeft = entry.timeLeft
 }
 
 
 function filterEntries(){
-    console.log("clicked !")
+    
+    if(document.querySelectorAll(".selected-category").length){
+        let selectedSubjectElm = document.querySelectorAll(".selected-category")[0]
+        let selectedSubject = selectedSubjectElm.innerHTML
+    
+        let activeEntries = grab("ongoing").children
+    
+        if(activeEntries.length){
+            for(let entry of activeEntries){
+                if(entry.children[1].innerHTML.trim() === selectedSubject){
+                    if(entry.classList.contains("entry-hide")){
+                        entry.classList.remove("entry-hide")
+                    }
+                }
+                else{
+                    entry.classList.add("entry-hide")
+                }
+            }        
+        }
+    }
+    else{
+        let hiddenElms =document.querySelectorAll(".entry-hide") 
+        if(hiddenElms.length){
+            hiddenElms.forEach((elm) => {
+                elm.classList.remove("entry-hide")
+            }
+            )
+        }
+    }
 }
 
 
@@ -485,7 +508,7 @@ onAuthStateChanged(auth, async (user) => {
             query(collection(db, `users/${userId}/todos`)), { includeMetadataChanges: true }, (snapshot) => {
                 snapshot.docChanges().forEach((change) => {
                     const source = snapshot.metadata.fromCache ? "local cache" : "server";
-                    console.log("snapshotted")
+                    console.log("- snapshot")
                     if(change.type === "added"){
                         addEntryToList(change.doc)      
                         console.log("added:",change.doc.id,change.doc.data(), "from", source) 
@@ -499,7 +522,6 @@ onAuthStateChanged(auth, async (user) => {
                         console.log("removed:",change.doc.data(), "from", source)
                     }
                     lastId = change.doc.id
-                    console.log(change.doc.data().created)
                 })
             }
         )
@@ -525,7 +547,6 @@ function addEventListeners(){
         grab("add-button").addEventListener("click", addNewEntry)
         grab("new-category-button").addEventListener("click", e => {
             let selected = grab("selected-category","class")
-            console.log(selected)
             if(selected.length !== 0){
                 selected[0].classList.remove("selected-category")
             }
@@ -534,5 +555,16 @@ function addEventListeners(){
         } 
         
         )
+
+    // ? Click handler / deselecter
+        grab("content-container").addEventListener("click", e => {
+            if(!e.target.classList.contains("category")){
+                let selectedCatElms = document.querySelectorAll(".selected-category") 
+                if(selectedCatElms.length){
+                    selectedCatElms[0].classList.remove("selected-category")
+                }
+                filterEntries()
+            }
+        })
 }
 addEventListeners()

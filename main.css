@@ -186,6 +186,10 @@ color:#9d8189;
                 padding-right:10px;
                 overflow-x: scroll;
             }
+                .entry-hide{
+                    display:none;
+                }
+                
                 #finished{
                     margin-top:50px;
                 }
