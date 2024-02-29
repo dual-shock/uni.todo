@@ -182,6 +182,7 @@ async function addNewEntry(){
     let descInput = grab("desc-input").value
     let selectedNewEntryCategory = document.querySelectorAll("#new-entry-row > .selected-category")
     let categoryInput = ""
+    console.log(selectedNewEntryCategory.length)
     if(selectedNewEntryCategory.length !== 0){
         if(selectedNewEntryCategory[0].id == "new-category-button"){
             categoryInput = selectedNewEntryCategory[0].children[0].value
@@ -213,7 +214,7 @@ async function addNewEntry(){
     // }
 
     if(valid === true){
-        console.log("reaches here?")
+        
         try{
             let docRef = addDoc( collection(db, `users/${userId}/todos`), {
                 created: new Timestamp(Math.round(new Date(startTimeInput).getTime() / 1000), 499999999),
@@ -554,18 +555,17 @@ function addEventListeners(){
             if(selected.length !== 0){
                 selected[0].classList.remove("selected-category")
             }
-            console.log("reaches listener")
-            console.log(grab("new-category-button").classList)
+
             grab("new-category-button").classList.add("selected-category")
-            console.log(grab("new-category-button").classList)
-            console.log(grab("new-category-button"))
+
         } 
         
         )
 
     // ? Click handler / deselecter
-        grab("content-container").addEventListener("click", e => {
+        grab("entries-content-container").addEventListener("click", e => {
             if(!e.target.classList.contains("category")){
+
                 let selectedCatElms = document.querySelectorAll(".selected-category") 
                 if(selectedCatElms.length){
                     selectedCatElms[0].classList.remove("selected-category")
