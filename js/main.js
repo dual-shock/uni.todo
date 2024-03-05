@@ -16,7 +16,7 @@ import {
     signInWithEmailAndPassword, 
     signOut
 }
-from "./js/firebaseUtils.js"
+from "./firebaseUtils.js"
 
 //* grab() added to namespace from js/utils.js in index.html
 
